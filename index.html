@@ -682,8 +682,12 @@
       background: linear-gradient(180deg, #fff0f8 0%, #f8f0ff 50%, #fff8ee 100%);
     }
 
+    #section-cake .section-title {
+      margin-bottom: 0.5rem;
+    }
+
     #section-cake .section-subtitle {
-      margin-bottom: 0.75rem;
+      margin-bottom: 1.25rem;
     }
 
     .cake-scene {
@@ -692,15 +696,15 @@
       flex-direction: column;
       align-items: center;
       gap: 1.5rem;
-      margin-top: 0.5rem;
+      margin-top: 1rem;
       width: 100%;
     }
 
     .cake-wrapper {
       transform-style: preserve-3d;
       position: relative;
-      margin-top: 1rem;
-      padding-top: 4.5rem;
+      margin-top: 0.5rem;
+      padding-top: 5.5rem;
     }
 
     .cake-base {
@@ -1420,6 +1424,7 @@
 
     .letter-body {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       padding: 2rem 2rem 1rem;
@@ -1713,7 +1718,7 @@
   <!-- Re-enjoy journey modal -->
   <div id="reenjoy-modal" role="dialog" aria-modal="true" aria-labelledby="reenjoy-title" hidden>
     <div class="reenjoy-card">
-      <p id="reenjoy-title">Would you like to enjoy this moment again?</p>
+      <p id="reenjoy-title">Would you like to re-enjoy the moment?</p>
       <div class="reenjoy-actions">
         <button class="btn-primary" id="reenjoy-yes" type="button">Yes, take me back ✨</button>
         <button type="button" id="reenjoy-no">Maybe later</button>
@@ -2069,7 +2074,8 @@ Happy Birthday.
     },
     sfx: {
       click: "assets/click.mp3",
-      bloom: "assets/bloom.mp3",
+      bloom: "assets/bloom2.mp3",
+      bloomFallback: "assets/bloom.mp3",
       sparkle: "assets/sparkle.mp3"
     },
     placeholderGradients: [
@@ -2089,21 +2095,40 @@ Happy Birthday.
   const animDuration = (d) => prefersReducedMotion ? 0.01 : d;
 
   // Resolve asset URLs correctly on GitHub Pages / subfolders
+  function getSiteBaseUrl() {
+    const { origin, pathname } = window.location;
+    if (pathname.endsWith("/")) return origin + pathname;
+    const lastSlash = pathname.lastIndexOf("/");
+    if (lastSlash === -1) return origin + "/";
+    const lastSegment = pathname.slice(lastSlash + 1);
+    if (lastSegment.includes(".")) return origin + pathname.slice(0, lastSlash + 1);
+    return origin + pathname + "/";
+  }
+
   function assetPath(relativePath) {
+    const clean = String(relativePath).replace(/^\//, "");
     try {
-      return new URL(relativePath.replace(/^\//, ""), window.location.href).href;
+      return new URL(clean, getSiteBaseUrl()).href;
     } catch {
-      return relativePath;
+      return clean;
     }
   }
 
   function imageExists(src) {
     return new Promise(resolve => {
-      const img = new Image();
-      const finish = (ok) => { img.onload = img.onerror = null; resolve(ok); };
-      img.onload = () => finish(true);
-      img.onerror = () => finish(false);
-      img.src = src;
+      fetch(src, { method: "HEAD", cache: "no-store" })
+        .then(res => {
+          if (!res.ok) { resolve(false); return; }
+          const type = res.headers.get("content-type") || "";
+          resolve(!type || type.startsWith("image/"));
+        })
+        .catch(() => {
+          const img = new Image();
+          const finish = (ok) => { img.onload = img.onerror = null; resolve(ok); };
+          img.onload = () => finish(true);
+          img.onerror = () => finish(false);
+          img.src = src;
+        });
     });
   }
 
@@ -2149,6 +2174,7 @@ Happy Birthday.
     isPlaying: false,
     bgAvailable: true,
     _bgLoaded: false,
+    _bgCandidateIdx: 0,
     _lastSparkleAt: 0,
 
     async init() {
@@ -2172,7 +2198,16 @@ Happy Birthday.
       this.bgMusic.volume = 0;
       this.birthdayMusic.volume = 0.6;
 
-      this.bgMusic.addEventListener("error", () => { this.bgAvailable = false; });
+      this.bgMusic.addEventListener("error", () => {
+        const next = CONFIG.music.bgCandidates[this._bgCandidateIdx + 1];
+        if (next) {
+          this._bgCandidateIdx += 1;
+          this.bgMusic.src = assetPath(next);
+          this.bgMusic.load();
+        } else {
+          this.bgAvailable = false;
+        }
+      });
       this.musicToggle.addEventListener("click", () => this.toggleBgMusic());
     },
 
@@ -2826,30 +2861,35 @@ Happy Birthday.
   async function discoverPhotos() {
     const max = CONFIG.photoCount || 12;
     const exts = ["jpg", "jpeg", "png", "webp"];
-    const found = [];
 
+    const tasks = [];
     for (let i = 1; i <= max; i++) {
-      for (const ext of exts) {
-        const src = assetPath(`assets/photo${i}.${ext}`);
-        if (await imageExists(src)) {
-          found.push({
-            src,
-            caption: CONFIG.photoCaptions[i - 1] || `Moment ${i}`
-          });
-          break;
+      const index = i;
+      tasks.push((async () => {
+        for (const ext of exts) {
+          const src = assetPath(`assets/photo${index}.${ext}`);
+          if (await imageExists(src)) {
+            return {
+              src,
+              caption: CONFIG.photoCaptions[index - 1] || `Moment ${index}`
+            };
+          }
         }
-      }
+        return null;
+      })());
     }
 
-    if (found.length) return found;
+    const discovered = (await Promise.all(tasks)).filter(Boolean);
+    if (discovered.length) return discovered;
 
+    const fromConfig = [];
     for (const photo of CONFIG.photos) {
       const src = assetPath(photo.src);
       if (await imageExists(src)) {
-        found.push({ src, caption: photo.caption });
+        fromConfig.push({ src, caption: photo.caption });
       }
     }
-    if (found.length) return found;
+    if (fromConfig.length) return fromConfig;
 
     return CONFIG.photoCaptions.slice(0, 4).map((caption, i) => ({
       src: "",
