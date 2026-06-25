@@ -10,7 +10,7 @@ A handcrafted, single-page interactive birthday journey for **Arzoo Tariq** — 
 
 ```
 Birthday/
-├── index.html              # Complete site (~2,600+ lines) — HTML, CSS, JS inline
+├── index.html              # Complete site (~3,600+ lines) — HTML, CSS, JS inline
 ├── README.md               # This documentation
 └── assets/
     ├── README.txt          # Asset filenames quick reference
@@ -26,32 +26,60 @@ Open `index.html` in any modern browser, or deploy the `Birthday/` folder to Git
 
 ---
 
-## Journey map (10 sections)
+## Journey Mode
+
+After the welcome screen, **Start Journey** activates **Journey Mode** — a guided step-by-step experience with a fixed bottom navigation bar.
+
+### Journey steps (9)
+
+| Step | Section | ID | Advance when |
+|------|---------|-----|--------------|
+| 0 | Welcome | `#section-welcome` | Welcome card entrance done |
+| 1 | Memories | `#section-photos` | Photo typewriter complete or skipped |
+| 2 | Noticed | `#section-noticed` | Cinematic sequence complete or skipped |
+| 3 | Celebrating | `#section-celebrate` | Card entrance animations done |
+| 4 | More Likes | `#section-instagram` | Card entrance animations done |
+| 5 | Quiz | `#section-quiz` | All 4 questions answered |
+| 6 | Make A Wish | `#section-cake` | Section entered (candle blow optional) |
+| 7 | Garden | `#section-garden` | Garden intro typewriter complete or skipped |
+| 8 | Final Message | `#section-sky` | Final typewriter complete or skipped |
+
+### Journey bar controls
+
+Fixed bottom bar (`#journey-bar`, z-index 850):
+
+- **Progress dots** — tap completed/current steps to jump back
+- **Skip Animation** — instantly reveals active typewriter/cinematic (not quiz answers)
+- **Previous** — go to prior step (hidden on step 0)
+- **Continue Journey** — steps 0–7 (disabled until step gate passes)
+- **Finish Journey** — step 8 (sky finale)
+
+### Dual scroll behavior
+
+- Journey Mode dims inactive sections (`opacity` + `blur`) and focuses the current step
+- Manual scroll still works — `IntersectionObserver` syncs progress and runs section enter logic
+- Free-scroll without Journey Mode also triggers section animations via `ScrollTrigger` fallbacks
+
+### Skip Animation & reduced motion
+
+- **Skip Animation** calls `TypewriterEngine.skip()` and marks the current step ready
+- `prefers-reduced-motion`: text reveals instantly, Skip button hidden, particles disabled
+
+---
+
+## Journey map
 
 ```
-Loader → Welcome → Photos → The Arzoo I've Noticed → Celebrating You → Instagram → Quiz → Cake → Garden → Sky
+Loader → Welcome → [Start Journey] → Photos → Noticed → Celebrate → Instagram → Quiz → Cake → Garden → Sky
                                                                                               ↳ Secret Letter 💌
                                                                                               ↳ Moon Easter Egg (×5)
 ```
-
-| # | Section | ID | Highlights |
-|---|---------|-----|------------|
-| — | Loader | `#loader` | Pulsing cake, min 1.2s, GSAP fade-out |
-| 1 | Welcome | `#section-welcome` | Aurora gradient, hearts/stars, Start Journey + confetti |
-| 2 | Photo journey | `#section-photos` | Polaroids, parallax, swipe, lightbox, sparkles, photo auto-discovery |
-| 3 | The Arzoo I've Noticed | `#section-noticed` | Cinematic typewriter — one paragraph at a time with fade transitions |
-| 4 | Celebrating you | `#section-celebrate` | 4 expandable premium cards (tap to reveal deeper messages) |
-| 5 | Instagram | `#section-instagram` | 5 Instagram-style cards — tap to reveal appreciation messages |
-| 6 | Quiz | `#section-quiz` | Observational questions, confetti, scroll to cake |
-| 7 | Cake | `#section-cake` | 3D cake, mic blow, glow, smoke, wish typewriter |
-| 8 | Garden | `#section-garden` | Bloom animations, particles, handcrafted flower messages |
-| 9 | Sky | `#section-sky` | Lanterns, shooting stars, cinematic closing letter, secret message button |
 
 ---
 
 ## Personalization (`CONFIG`)
 
-Edit the `CONFIG` object at the top of the `<script>` block in `index.html` (~line 1500).
+Edit the `CONFIG` object at the top of the `<script>` block in `index.html` (~line 1600).
 
 | Key | Purpose |
 |-----|---------|
@@ -84,9 +112,15 @@ No code changes required beyond `CONFIG` if filenames follow the pattern.
 
 ## Features
 
+### Journey orchestration
+- `JourneyController` — step navigation, completion gates, scroll sync, keyboard ←/→
+- `TypewriterEngine` — cancellable typewriters with skip support
+- `DecorationManager` — particle intensity by active section + text-focus dimming; pauses off-screen canvases
+
 ### Audio system
 - **Play/pause** via 🎵 button
-- **Volume slider** and **mute** in glass panel (bottom-right)
+- **Volume slider** and **mute** in glass panel (bottom-right, z-index 860)
+- Panel shifts up when journey bar is visible to avoid overlap
 - **Smooth fade in/out** (GSAP volume tween)
 - **Birthday clip** on candle blow; background music fades out and resumes after
 - Missing `bg-music.mp3` fails silently — no console errors
@@ -104,25 +138,32 @@ No code changes required beyond `CONFIG` if filenames follow the pattern.
 ### Celebrating you cards
 - 🥗 Nutritionist · 📸 Creator · 💪 Quiet Strength · 🌿 Independence
 - Tap to expand with animation + confetti + SFX
+- Expanded copy no longer clipped (`max-height: none`)
 
 ### Instagram section
 - "A Few Things That Deserve More Likes"
 - 5 cards: Creativity, Growth, Strength, Effort, Kindness
 - Tap reveals personalized message with hover animations
 
+### Quiz
+- Observational questions with confetti on each answer
+- **Next** blocked until all 4 questions answered (Skip does not bypass quiz)
+- No auto-scroll to cake — user advances via Journey bar
+
 ### Cake
 - Enhanced flame glow + cake aura
 - Mic blow detection + fallback button
 - Smoke, confetti, birthday music
-- Typewriter: *"May all the wishes you don't talk about find their way to you."*
+- Typewriter wish on blow: *"May all the wishes you don't talk about find their way to you."*
 
 ### Garden
 - Upgraded bloom (elastic GSAP)
 - Particle burst on each flower
-- New handcrafted messages
+- Flower messages flip below when near top edge
+- Handcrafted messages
 
 ### Sky finale
-- Slow typewriter closing note (user-specified copy)
+- Slow typewriter closing note
 - Signature: *"From someone who noticed the strength behind your silence 🌙"*
 - **A Little Message For You 💌** — paper-texture modal with live typewriter letter
 
@@ -141,11 +182,32 @@ No code changes required beyond `CONFIG` if filenames follow the pattern.
 | canvas-confetti | jsDelivr | Celebrations |
 | Google Fonts | CDN | Nunito + Cormorant Garamond |
 
+### Z-index scale
+
+| Layer | z-index |
+|-------|---------|
+| Particle canvases | 0 |
+| Section content | 2 |
+| Moon, flower messages | 10 |
+| Journey bar | 850 |
+| Audio panel | 860 |
+| Lightbox | 9400 |
+| Easter egg modal | 9500 |
+| Secret letter modal | 9600 |
+
 ### Accessibility
 - Semantic landmarks, ARIA labels, keyboard focus
+- Journey bar: `aria-current="step"`, `aria-disabled` on Continue when gated
+- Focus moves to section heading on step change
 - `aria-expanded` on expandable cards
 - `aria-live` on typewriter regions
-- `prefers-reduced-motion` disables particles, shortens animations
+- `prefers-reduced-motion` disables particles, shortens animations, instant text
+
+### Performance
+- Particle `requestAnimationFrame` loops pause when canvas leaves viewport
+- Decorative intensity reduced 50% during active typewriter (`DecorationManager.setTextFocus`)
+- Confetti skipped when `document.hidden` or reduced motion (unless user-triggered with `force: true`)
+- Debounced `ScrollTrigger.refresh()` on resize
 
 ### GitHub Pages
 1. Push `Birthday/` contents to repo (or set `/docs` to `Birthday/`)
@@ -157,31 +219,49 @@ No code changes required beyond `CONFIG` if filenames follow the pattern.
 ## Code organization (`index.html`)
 
 1. HEAD / META / CDN  
-2. CSS: Variables, Loader, Global UI, Sections 1–9, Modals  
-3. HTML: Loader, Audio panel, Lightbox, Modals, Sections  
+2. CSS: Variables, Loader, Global UI, Journey bar, Sections 1–9, Modals  
+3. HTML: Loader, Audio panel, Journey bar, Lightbox, Modals, Sections  
 4. JS: CONFIG  
-5. JS: Utilities (audio, confetti, typewriter, photos, particles)  
-6. JS: Section inits (`initWelcome` … `initSecretLetter`, `initEasterEgg`)  
-7. JS: `init()`  
+5. JS: Utilities (audio, confetti, scroll)  
+6. JS: `TypewriterEngine`, `DecorationManager`, `JourneyController`  
+7. JS: Section inits (`initWelcome` … `initEasterEgg`)  
+8. JS: `init()`  
 
 ---
 
 ## QA checklist
 
-- [ ] Loader → Welcome → full scroll journey  
-- [ ] Photos: swipe, arrows, lightbox, placeholders if no images  
-- [ ] Cinematic section plays paragraph sequence once  
-- [ ] Celebrate cards expand/collapse  
-- [ ] Instagram cards reveal on tap  
-- [ ] Quiz confetti + scroll to cake  
-- [ ] Mic blow + button + wish message  
-- [ ] Flowers bloom with particles  
-- [ ] Sky typewriter + secret letter modal  
-- [ ] Moon ×5 easter egg  
-- [ ] Music: play, pause, volume, mute, fade  
-- [ ] Mobile 375px + desktop 1280px  
-- [ ] Reduced motion respected  
-- [ ] No console errors with missing audio  
+### Journey Mode (all 10 steps)
+- [ ] Loader → Welcome → Start Journey activates bar
+- [ ] Each step: text fully visible during and after animations
+- [ ] Continue disabled until gate passes; Skip reveals typewriter instantly
+- [ ] Previous returns to prior step with smooth scroll
+- [ ] Quiz blocks Continue until Q4 done; Skip does not skip quiz
+- [ ] Finish Journey on sky step fires confetti
+- [ ] Manual scroll updates progress dots and section focus
+- [ ] Keyboard ←/→ navigates when journey active
+
+### Sections
+- [ ] Photos: swipe, arrows, lightbox, placeholders if no images
+- [ ] Cinematic section plays paragraph sequence once (or skip)
+- [ ] Celebrate cards expand/collapse without clipping long copy
+- [ ] Instagram cards reveal on tap
+- [ ] Mic blow + button + wish message
+- [ ] Flowers bloom with particles; tooltips not clipped
+- [ ] Sky typewriter + secret letter modal scroll on small screens
+- [ ] Moon ×5 easter egg
+
+### Layout & overlap
+- [ ] Journey bar + audio panel do not overlap (375px, 768px, 1280px)
+- [ ] No horizontal overflow on mobile
+- [ ] Safe-area insets on journey bar (notched devices)
+- [ ] Modals above journey chrome
+
+### Performance & a11y
+- [ ] Particles dim/pause when section inactive or off-screen
+- [ ] Music: play, pause, volume, mute, fade
+- [ ] `prefers-reduced-motion`: instant text, journey still navigable
+- [ ] No console errors with missing audio
 
 ---
 
