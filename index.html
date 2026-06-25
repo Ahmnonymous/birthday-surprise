@@ -2702,6 +2702,18 @@ Happy Birthday.
       if (onComplete) onComplete();
     },
 
+    cancel() {
+      if (!this.active) {
+        this._clearTimers();
+        return;
+      }
+      const { cursor } = this.active;
+      this._clearTimers();
+      if (cursor) cursor.style.display = "none";
+      this.active = null;
+      this._setTextFocus(false);
+    },
+
     start(element, lines, options = {}) {
       this.skip();
       if (typeof lines === "string") lines = [lines];
