@@ -1689,11 +1689,11 @@
   </main>
 
   <!-- Hidden audio elements -->
-  <audio id="bg-music" loop preload="auto"></audio>
-  <audio id="birthday-music" preload="auto"></audio>
-  <audio id="sfx-click" preload="auto"></audio>
-  <audio id="sfx-bloom" preload="auto"></audio>
-  <audio id="sfx-sparkle" preload="auto"></audio>
+  <audio id="bg-music" loop preload="auto" playsinline></audio>
+  <audio id="birthday-music" preload="auto" playsinline></audio>
+  <audio id="sfx-click" preload="auto" playsinline></audio>
+  <audio id="sfx-bloom" preload="auto" playsinline></audio>
+  <audio id="sfx-sparkle" preload="auto" playsinline></audio>
 
   <script>
     /* ========== JS: CONFIG ========== */
@@ -1925,10 +1925,32 @@ Happy Birthday.
       [this.sfxClick, this.sfxBloom, this.sfxSparkle].forEach(a => { a.volume = 0.25; });
 
       this.bgMusic.addEventListener("error", () => { this.bgAvailable = false; });
+      this.bgMusic.load();
+
       this.volumeSlider.addEventListener("input", (e) => this.setVolume(e.target.value / 100));
       this.muteBtn.addEventListener("click", () => this.toggleMute());
 
       this.musicToggle.addEventListener("click", () => this.toggleBgMusic());
+    },
+
+    _updateMusicToggle(playing) {
+      this.isPlaying = playing;
+      this.musicToggle.setAttribute("aria-pressed", playing ? "true" : "false");
+      this.musicToggle.classList.toggle("playing", playing);
+      this.musicToggle.textContent = playing ? "🔊" : "🎵";
+    },
+
+    _whenBgCanPlay(callback) {
+      if (this.bgMusic.readyState >= 2) {
+        callback();
+        return;
+      }
+      const onReady = () => {
+        this.bgMusic.removeEventListener("canplay", onReady);
+        callback();
+      };
+      this.bgMusic.addEventListener("canplay", onReady);
+      this.bgMusic.load();
     },
 
     setVolume(v) {
@@ -1951,11 +1973,17 @@ Happy Birthday.
     fadeInBg() {
       if (!this.bgAvailable) return;
       if (this.fadeTween) this.fadeTween.kill();
+      const target = this.muted ? 0 : this.targetVolume;
+      if (prefersReducedMotion) {
+        this.bgMusic.volume = target;
+        return;
+      }
       this.bgMusic.volume = 0;
       this.fadeTween = gsap.to(this.bgMusic, {
-        volume: this.muted ? 0 : this.targetVolume,
+        volume: target,
         duration: animDuration(1.2),
-        ease: "power2.out"
+        ease: "power2.out",
+        onComplete: () => { this.bgMusic.volume = target; }
       });
     },
 
@@ -1972,10 +2000,23 @@ Happy Birthday.
     unlock() {
       if (this.unlocked) return;
       this.unlocked = true;
-      this.bgMusic.play().then(() => {
-        this.bgMusic.pause();
-        this.bgMusic.currentTime = 0;
-      }).catch(() => {});
+      this._whenBgCanPlay(() => {
+        this.bgMusic.play().then(() => {
+          this.bgMusic.pause();
+          this.bgMusic.currentTime = 0;
+        }).catch(() => {});
+      });
+    },
+
+    startBgMusic() {
+      if (!this.bgAvailable || this.isPlaying) return;
+      this.unlock();
+      this._whenBgCanPlay(() => {
+        this.bgMusic.play().then(() => {
+          this._updateMusicToggle(true);
+          this.fadeInBg();
+        }).catch(() => {});
+      });
     },
 
     toggleBgMusic() {
@@ -1984,19 +2025,10 @@ Happy Birthday.
       if (this.isPlaying) {
         this.fadeOutBg(() => {
           this.bgMusic.pause();
-          this.isPlaying = false;
-          this.musicToggle.setAttribute("aria-pressed", "false");
-          this.musicToggle.classList.remove("playing");
-          this.musicToggle.textContent = "🎵";
+          this._updateMusicToggle(false);
         });
       } else {
-        this.bgMusic.play().then(() => {
-          this.isPlaying = true;
-          this.musicToggle.setAttribute("aria-pressed", "true");
-          this.musicToggle.classList.add("playing");
-          this.musicToggle.textContent = "🔊";
-          this.fadeInBg();
-        }).catch(() => { this.bgAvailable = false; });
+        this.startBgMusic();
       }
       playSfx("click");
     },
@@ -2044,23 +2076,36 @@ Happy Birthday.
     setTimeout(() => launchConfetti({ particleCount: 80, spread: 120, origin: { x: 0.8, y: 0.5 }, force: true }), 400);
   }
 
-  function scrollToSection(selector, onComplete) {
+  function scrollToSection(selector, onComplete, instant = false) {
     const el = document.querySelector(selector);
     if (!el) {
       onComplete?.();
       return;
     }
-    try {
-      gsap.to(window, {
-        duration: animDuration(1.2),
-        scrollTo: { y: el, autoKill: true },
-        ease: "power2.inOut",
-        onComplete: () => onComplete?.()
-      });
-    } catch (e) {
-      el.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
+
+    const journey = document.getElementById("journey");
+    if (journey) journey.style.scrollSnapType = "none";
+
+    const finish = () => {
+      if (journey) journey.style.scrollSnapType = "";
       onComplete?.();
-    }
+    };
+
+    const runScroll = () => {
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      const y = Math.max(0, el.getBoundingClientRect().top + scrollY);
+      const behavior = (instant || prefersReducedMotion) ? "auto" : "smooth";
+      window.scrollTo({ top: y, left: 0, behavior });
+
+      if (behavior === "auto") {
+        requestAnimationFrame(finish);
+      } else {
+        setTimeout(finish, animDuration(1.2) * 1000 + 100);
+      }
+    };
+
+    // Run after any pending layout from journey bar / class toggles
+    requestAnimationFrame(runScroll);
   }
 
   // ========== JOURNEY STEPS ==========
@@ -2412,10 +2457,9 @@ Happy Birthday.
 
       if (sectionEl) {
         if (instant) {
-          sectionEl.scrollIntoView({ behavior: "auto", block: "start" });
-          this._stepTimer = setTimeout(finishEnter, 80);
+          scrollToSection(selector, finishEnter, true);
         } else {
-          scrollToSection(selector, finishEnter);
+          scrollToSection(selector, finishEnter, false);
         }
       } else {
         finishEnter();
@@ -2740,6 +2784,7 @@ Happy Birthday.
 
     document.getElementById("start-journey").addEventListener("click", () => {
       AudioManager.unlock();
+      AudioManager.startBgMusic();
       playSfx("sparkle");
 
       const btn = document.getElementById("start-journey");
@@ -2755,7 +2800,8 @@ Happy Birthday.
         launchConfetti({ particleCount: 60, spread: 60, origin: { y: 0.7 }, force: true });
         JourneyController.activate();
         JourneyController.markReady(0);
-        JourneyController.goTo(1);
+        // Instant jump to photos — reliable across browsers after layout settles
+        setTimeout(() => JourneyController.goTo(1, true), 80);
       });
     });
   }
