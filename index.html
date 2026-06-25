@@ -219,8 +219,7 @@
       justify-content: flex-start;
       padding: var(--section-top-reserve) max(1rem, env(safe-area-inset-right)) var(--journey-bar-reserve) max(1rem, env(safe-area-inset-left));
       overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      overflow-y: hidden;
       overscroll-behavior: contain;
       gap: 0.35rem;
     }
@@ -421,8 +420,6 @@
     /* ========== CSS: Section 2 — Photos ========== */
     #section-photos {
       background: linear-gradient(180deg, #fff0f5 0%, #f0e6ff 50%, #fff8e7 100%);
-      overflow-x: hidden;
-      overflow-y: auto;
       justify-content: flex-start;
       padding-top: max(1.25rem, env(safe-area-inset-top));
     }
@@ -983,8 +980,6 @@
     /* ========== CSS: Section 5 — Garden ========== */
     #section-garden {
       background: linear-gradient(180deg, #87c8a8 0%, #5a9e7a 40%, #3d7a5c 100%);
-      overflow-x: hidden;
-      overflow-y: auto;
       justify-content: flex-start;
       padding-top: max(1.5rem, env(safe-area-inset-top));
     }
@@ -1135,8 +1130,6 @@
     #section-noticed {
       background: linear-gradient(180deg, #1a1025 0%, #2d1f45 40%, #1f2840 100%);
       color: var(--text-light);
-      overflow-x: hidden;
-      overflow-y: auto;
       justify-content: flex-start;
       padding-top: max(1.5rem, env(safe-area-inset-top));
     }
@@ -1795,18 +1788,73 @@
 
       body.journey-active .section {
         padding-bottom: calc(var(--journey-bar-reserve) + 0.75rem);
+        overflow-y: hidden;
+        overscroll-behavior: contain;
+      }
+
+      /* Only the active section scrolls — contained to itself */
+      body.journey-active .section.journey-current {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        touch-action: pan-y;
       }
 
       body.journey-active .section-content {
-        max-height: calc(100dvh - var(--section-top-reserve) - var(--journey-bar-reserve) - 1rem);
+        max-height: none;
+        overflow: visible;
       }
 
       .section-content {
         padding: 0 0.25rem;
       }
 
+      /* Let the section scroll — avoid nested scroll areas on small screens */
+      .cinematic-stage,
+      .cinematic-stage.is-complete,
+      .cinematic-stage.is-playing {
+        max-height: none;
+        overflow-y: visible;
+        min-height: 6rem;
+      }
+
+      .garden-intro {
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      .final-typewriter {
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      .photos-parallax-wrap {
+        max-height: none;
+        height: auto;
+      }
+
+      .carousel-viewport {
+        width: min(94vw, 440px);
+        min-height: min(36dvh, 260px);
+        max-height: min(42dvh, 300px);
+      }
+
       #section-welcome {
         justify-content: center;
+      }
+
+      /* Welcome can scroll on tiny screens before journey starts */
+      #section-welcome.section {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      body.journey-active #section-welcome.section {
+        overflow-y: hidden;
+      }
+
+      body.journey-active #section-welcome.section.journey-current {
+        overflow-y: auto;
       }
 
       #section-welcome .section-content {
@@ -1834,16 +1882,13 @@
       .section-subtitle { font-size: 0.92rem; margin-bottom: 0.75rem; line-height: 1.45; }
 
       .carousel-wrap { margin: 0 auto; width: 100%; }
-      .photos-parallax-wrap { max-height: min(46dvh, calc(100dvh - var(--journey-bar-reserve) - 8.5rem)); }
-      .carousel-viewport { width: min(94vw, 440px); min-height: min(36dvh, 260px); max-height: min(42dvh, 300px); }
       .polaroid { padding: 8px 8px 8px; }
       .polaroid-caption { font-size: 0.74rem; margin-top: 4px; }
-      #section-photos .typewriter-box { min-height: 1.75rem; max-height: 2.5rem; font-size: 0.82rem; margin-top: 0.35rem; }
+      #section-photos .typewriter-box { min-height: 1.75rem; max-height: none; font-size: 0.82rem; margin-top: 0.35rem; }
       #section-photos .section-content { gap: 0.55rem; }
 
       .cinematic-panel { width: 100%; gap: 0.55rem; }
-      .cinematic-stage { padding: 1rem 0.85rem; min-height: 6rem; max-height: min(30dvh, 200px); }
-      .cinematic-stage.is-complete { max-height: min(44dvh, 300px); min-height: 8rem; }
+      .cinematic-stage { padding: 1rem 0.85rem; }
       .cinematic-line { font-size: 0.95rem; line-height: 1.55; }
       .cinematic-progress { margin-bottom: 0.45rem; }
 
@@ -1869,13 +1914,13 @@
       .cake-scene { transform: scale(0.88); transform-origin: center top; gap: 1.25rem; margin-top: 0.75rem; }
 
       #section-garden .section-content { width: 100%; gap: 0.45rem; }
-      .garden-scene { max-height: min(30dvh, 220px); padding-top: 0.35rem; width: 100%; margin-bottom: 0.25rem; }
-      .garden-intro { font-size: 0.88rem; padding: 0.65rem 0.75rem; margin-bottom: 0.45rem; min-height: 3rem; max-height: min(16dvh, 110px); }
+      .garden-scene { padding-top: 0.35rem; width: 100%; margin-bottom: 0.25rem; }
+      .garden-intro { font-size: 0.88rem; padding: 0.65rem 0.75rem; margin-bottom: 0.45rem; min-height: 3rem; }
       .flower-bloom { width: 52px; height: 52px; }
       .flower-message { max-width: min(140px, 38vw); font-size: 0.78rem; padding: 0.45rem 0.55rem; }
       .garden-hint { font-size: 0.85rem; margin-top: 0.35rem; }
 
-      .final-typewriter { font-size: 0.92rem; max-height: min(36dvh, 240px); line-height: 1.55; margin-bottom: 0.5rem; }
+      .final-typewriter { font-size: 0.92rem; line-height: 1.55; margin-bottom: 0.5rem; }
       .sky-message-panel { padding: 0; width: 100%; gap: 0.5rem; }
       .sky-closing { font-size: 0.9rem; margin-top: 0.5rem; }
       #secret-letter-btn { margin-top: 1rem; }
@@ -3123,7 +3168,9 @@ Happy Birthday.
       const selector = JOURNEY_STEPS[step].section;
 
       document.querySelectorAll(".section").forEach(s => {
-        s.classList.toggle("journey-current", s.matches(selector));
+        const isCurrent = s.matches(selector);
+        s.classList.toggle("journey-current", isCurrent);
+        if (!isCurrent) s.scrollTop = 0;
       });
 
       DecorationManager.setActiveSection(selector);
