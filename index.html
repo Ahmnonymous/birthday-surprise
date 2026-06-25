@@ -47,13 +47,17 @@
     html {
       scroll-behavior: smooth;
       -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100%;
     }
 
     body {
       font-family: var(--font-body);
       color: var(--text-dark);
       background: var(--cream);
-      overflow-x: hidden;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
       line-height: 1.6;
     }
 
@@ -250,40 +254,49 @@
       margin-bottom: 2rem;
     }
 
-    /* Journey container */
+    /* Horizontal journey container */
     #journey {
-      scroll-snap-type: y proximity;
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    #journey-track {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      will-change: transform;
     }
 
     .section {
       position: relative;
-      min-height: 100vh;
-      min-height: 100dvh;
+      flex: 0 0 100vw;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 4rem 1.25rem 5rem;
-      scroll-snap-align: start;
+      justify-content: flex-start;
+      padding: max(3.5rem, env(safe-area-inset-top)) 1rem 6rem;
       overflow-x: hidden;
-      overflow-y: visible;
-      transition: opacity 0.5s var(--ease-out), filter 0.5s var(--ease-out);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
     body.journey-active .section {
-      padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
     }
 
-    body.journey-active .section:not(.journey-current) {
-      opacity: 0.38;
-      filter: blur(2px);
-      pointer-events: none;
-    }
-
-    body.journey-active .section.journey-current {
-      opacity: 1;
-      filter: none;
-      pointer-events: auto;
+    .section-content {
+      position: relative; z-index: 2;
+      width: 100%; max-width: 900px;
+      margin: auto 0;
+      flex-shrink: 0;
     }
 
     /* Journey bar — z-index 850 */
@@ -378,7 +391,7 @@
       background: rgba(255, 255, 255, 0.7);
       color: var(--text-dark);
       min-height: 44px;
-      transition: transform 0.2s, opacity 0.2s;
+      transition: transform 0.2s, opacity  0.2s;
     }
 
     .journey-btn:hover:not(:disabled) { transform: translateY(-1px); }
@@ -387,6 +400,24 @@
     .journey-btn-primary {
       background: linear-gradient(135deg, var(--pink-light), var(--gold));
       border-color: transparent;
+      flex: 1;
+      min-width: 8rem;
+    }
+
+    #journey-next[disabled] + .journey-gate-hint,
+    .journey-gate-hint {
+      font-size: 0.7rem;
+      color: var(--text-dark);
+      opacity: 0.75;
+      text-align: center;
+      width: 100%;
+      margin: 0;
+      display: none;
+      line-height: 1.3;
+    }
+
+    .journey-gate-hint.visible {
+      display: block;
     }
 
     #journey-skip {
@@ -394,8 +425,6 @@
       padding: 0.45rem 0.9rem;
       display: none;
     }
-
-    #journey-skip.visible { display: inline-flex; }
 
     @media (min-width: 768px) {
       #journey-bar {
@@ -415,11 +444,6 @@
       width: 100%; height: 100%;
       pointer-events: none;
       z-index: 0;
-    }
-
-    .section-content {
-      position: relative; z-index: 2;
-      width: 100%; max-width: 900px;
     }
 
     /* ========== CSS: Section 1 — Welcome ========== */
@@ -879,6 +903,7 @@
       height: min(460px, 58vh);
       margin: 0 auto;
       padding-top: 3rem;
+      overflow: visible;
     }
 
     .flower.message-below .flower-message {
@@ -898,14 +923,9 @@
     .flower {
       position: absolute;
       cursor: pointer;
-      transform: scale(0);
-      opacity: 0;
-      transition: none;
-      z-index: 5;
-    }
-
-    .flower.visible {
       opacity: 1;
+      transform: scale(1);
+      z-index: 5;
     }
 
     .flower-bloom {
@@ -1456,6 +1476,70 @@
       pointer-events: none;
     }
 
+    /* Mobile-first responsive polish */
+    @media (max-width: 640px) {
+      .section {
+        padding: max(2.75rem, env(safe-area-inset-top)) 0.85rem 6.5rem;
+      }
+
+      body.journey-active .section {
+        padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px));
+      }
+
+      .glass-card { padding: 1.35rem 1.1rem; }
+      .welcome-card h1 { font-size: clamp(1.35rem, 6vw, 1.75rem); }
+      .welcome-card p { font-size: 1rem; }
+      .btn-primary { padding: 0.85rem 1.5rem; font-size: 0.95rem; width: 100%; max-width: 280px; }
+      .section-title { font-size: clamp(1.25rem, 5.5vw, 1.65rem); margin-bottom: 0.35rem; }
+      .section-subtitle { font-size: 0.95rem; margin-bottom: 1.25rem; }
+
+      .carousel-wrap { margin: 0 -0.25rem; }
+      .polaroid { width: min(220px, 72vw); }
+      .typewriter-box { font-size: 0.95rem; padding: 0.85rem 1rem; }
+
+      .cinematic-stage { padding: 1rem 0.85rem; min-height: 8rem; }
+      .cinematic-line { font-size: 1rem; line-height: 1.55; }
+
+      .celebrate-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+      .celebrate-card { padding: 1.1rem 1rem; }
+      .celebrate-hint { font-size: 0.8rem; }
+
+      .insta-grid { grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
+      .insta-card { padding: 0.85rem 0.65rem; }
+      .insta-card-icon { font-size: 1.5rem; }
+      .insta-card-label { font-size: 0.8rem; }
+
+      .quiz-card { padding: 1.15rem 1rem; }
+      .quiz-option { padding: 0.75rem 0.85rem; font-size: 0.95rem; min-height: 44px; }
+
+      .cake-scene { transform: scale(0.88); transform-origin: center top; }
+      .cake-wish { font-size: 0.95rem; padding: 0 0.5rem; }
+
+      .garden-scene { height: min(320px, 40vh); padding-top: 1.5rem; }
+      .garden-intro { font-size: 0.95rem; padding: 0.85rem 1rem; margin-bottom: 0.75rem; }
+      .flower-bloom { width: 56px; height: 56px; }
+      .flower-message { max-width: 140px; font-size: 0.8rem; padding: 0.5rem 0.65rem; }
+
+      .final-typewriter { font-size: 0.95rem; max-height: 45vh; }
+      .sky-message-panel { padding: 0 0.25rem; }
+
+      #journey-bar { padding: 0.6rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom, 0px)); gap: 0.4rem; }
+      .journey-step-label { font-size: 0.7rem; min-width: 4.5rem; }
+      .journey-step-dot { width: 28px; height: 28px; font-size: 0.75rem; }
+      .journey-btn { font-size: 0.8rem; padding: 0.5rem 0.85rem; min-height: 44px; }
+      .journey-progress-wrap { gap: 0.5rem; }
+
+      #music-toggle { width: 46px; height: 46px; font-size: 1.2rem; }
+      .audio-controls { min-width: 140px; padding: 0.6rem 0.75rem; }
+
+      .letter-paper { margin: 1rem; padding: 1.25rem 1rem; max-height: 85vh; }
+    }
+
+    @media (max-width: 380px) {
+      .insta-grid { grid-template-columns: 1fr 1fr; }
+      .flower-message { max-width: 120px; font-size: 0.75rem; }
+    }
+
     /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -1466,7 +1550,6 @@
 
       .particle-canvas, #sky-canvas, .photo-sparkles { display: none; }
       .aurora-bg::before { animation: none; }
-      body.journey-active .section:not(.journey-current) { filter: none; opacity: 0.5; }
       html { scroll-behavior: auto; }
     }
   </style>
@@ -1535,12 +1618,14 @@
       <button type="button" class="journey-btn" id="journey-skip" aria-label="Skip current animation and show full text">Skip Animation</button>
     </div>
     <div class="journey-controls">
-      <button type="button" class="journey-btn" id="journey-prev" aria-label="Previous section">Previous</button>
-      <button type="button" class="journey-btn journey-btn-primary" id="journey-next" aria-label="Continue to next section">Continue Journey</button>
+      <button type="button" class="journey-btn" id="journey-prev" aria-label="Previous section">← Back</button>
+      <button type="button" class="journey-btn journey-btn-primary" id="journey-next" aria-label="Skip to next section">Next Section →</button>
+      <p class="journey-gate-hint" id="journey-gate-hint" aria-live="polite"></p>
     </div>
   </nav>
 
   <main id="journey">
+    <div id="journey-track">
 
     <!-- SECTION 1: Welcome -->
     <section id="section-welcome" class="section" aria-labelledby="welcome-heading">
@@ -1686,6 +1771,7 @@
       </div>
     </section>
 
+    </div><!-- #journey-track -->
   </main>
 
   <!-- Hidden audio elements -->
@@ -2076,36 +2162,36 @@ Happy Birthday.
     setTimeout(() => launchConfetti({ particleCount: 80, spread: 120, origin: { x: 0.8, y: 0.5 }, force: true }), 400);
   }
 
-  function scrollToSection(selector, onComplete, instant = false) {
-    const el = document.querySelector(selector);
-    if (!el) {
+  function slideToStep(step, onComplete, instant = false) {
+    const track = document.getElementById("journey-track");
+    const journey = document.getElementById("journey");
+    if (!track || !journey) {
       onComplete?.();
       return;
     }
 
-    const journey = document.getElementById("journey");
-    if (journey) journey.style.scrollSnapType = "none";
+    const x = -step * journey.offsetWidth;
+    const finish = () => onComplete?.();
 
-    const finish = () => {
-      if (journey) journey.style.scrollSnapType = "";
-      onComplete?.();
-    };
+    if (instant || prefersReducedMotion) {
+      gsap.set(track, { x });
+      requestAnimationFrame(finish);
+      return;
+    }
 
-    const runScroll = () => {
-      const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
-      const y = Math.max(0, el.getBoundingClientRect().top + scrollY);
-      const behavior = (instant || prefersReducedMotion) ? "auto" : "smooth";
-      window.scrollTo({ top: y, left: 0, behavior });
+    gsap.to(track, {
+      x,
+      duration: animDuration(0.75),
+      ease: "power2.inOut",
+      onComplete: finish
+    });
+  }
 
-      if (behavior === "auto") {
-        requestAnimationFrame(finish);
-      } else {
-        setTimeout(finish, animDuration(1.2) * 1000 + 100);
-      }
-    };
-
-    // Run after any pending layout from journey bar / class toggles
-    requestAnimationFrame(runScroll);
+  // Legacy alias — horizontal slides replace vertical scroll
+  function scrollToSection(selector, onComplete, instant = false) {
+    const idx = JOURNEY_STEPS.findIndex(s => s.section === selector);
+    if (idx >= 0) slideToStep(idx, onComplete, instant);
+    else onComplete?.();
   }
 
   // ========== JOURNEY STEPS ==========
@@ -2152,7 +2238,10 @@ Happy Birthday.
 
     start(element, lines, options = {}) {
       this.skip();
-      const { charSpeed = 40, linePause = 1200, onComplete, clear = true, cursor = null } = options;
+      if (typeof lines === "string") lines = [lines];
+      else if (!Array.isArray(lines)) lines = [String(lines ?? "")];
+
+      const { charSpeed = 22, linePause = 450, onComplete, clear = true, cursor = null } = options;
       const fullText = lines.join("\n\n");
       const instant = prefersReducedMotion;
 
@@ -2262,9 +2351,9 @@ Happy Birthday.
         ease: "power2.out",
         onComplete: () => {
           TypewriterEngine.start(lineEl, [paragraphs[index]], {
-            charSpeed: 36,
+            charSpeed: 18,
             onComplete: () => {
-              const pause = index < paragraphs.length - 1 ? 1200 : 0;
+              const pause = index < paragraphs.length - 1 ? 400 : 0;
               cinematicTimer = setTimeout(() => {
                 if (index < paragraphs.length - 1) {
                   gsap.to(lineEl, {
@@ -2344,9 +2433,11 @@ Happy Birthday.
     readySteps: new Set(),
     stepEnterHandlers: {},
     quizComplete: false,
+    candlesBlown: false,
     scrolling: false,
     activeCinematic: null,
     _stepTimer: null,
+    _slideTween: null,
 
     init() {
       const progressEl = document.getElementById("journey-progress");
@@ -2383,7 +2474,13 @@ Happy Birthday.
         }
       });
 
-      this._initScrollSync();
+      this._initSwipeNav();
+
+      window.addEventListener("resize", () => {
+        if (this.active) slideToStep(this.currentStep, null, true);
+      });
+
+      slideToStep(0, null, true);
     },
 
     registerStepEnter(step, handler) {
@@ -2403,22 +2500,44 @@ Happy Birthday.
     },
 
     canAdvance(step = this.currentStep) {
-      if (step === 5) return this.quizComplete;
-      return this.readySteps.has(step);
+      if (step === 6) return this.candlesBlown;
+      return true;
+    },
+
+    setCandlesBlown() {
+      this.candlesBlown = true;
+      this.markReady(6);
+    },
+
+    endCurrentSection() {
+      if (TypewriterEngine.isRunning()) TypewriterEngine.skip();
+      if (this.activeCinematic && this.activeCinematic.skip) {
+        this.activeCinematic.skip();
+        this.activeCinematic = null;
+      }
+      this.markReady(this.currentStep);
     },
 
     updateNav() {
       const prevBtn = document.getElementById("journey-prev");
       const nextBtn = document.getElementById("journey-next");
       const label = document.getElementById("journey-step-label");
+      const gateHint = document.getElementById("journey-gate-hint");
       const dots = document.querySelectorAll(".journey-step-dot");
 
       prevBtn.style.visibility = this.currentStep === 0 ? "hidden" : "visible";
       prevBtn.disabled = this.currentStep === 0;
 
       const isLast = this.currentStep === JOURNEY_STEPS.length - 1;
-      nextBtn.textContent = isLast ? "Finish Journey" : "Continue Journey";
+      nextBtn.textContent = isLast ? "Finish ✨" : "Next Section →";
       nextBtn.disabled = !this.canAdvance(this.currentStep);
+
+      let hintText = "";
+      if (this.currentStep === 6 && !this.candlesBlown) {
+        hintText = "Blow out the candles to continue 🎂";
+      }
+      gateHint.textContent = hintText;
+      gateHint.classList.toggle("visible", !!hintText);
 
       label.textContent = JOURNEY_STEPS[this.currentStep].label;
 
@@ -2455,15 +2574,7 @@ Happy Birthday.
         this._stepTimer = null;
       };
 
-      if (sectionEl) {
-        if (instant) {
-          scrollToSection(selector, finishEnter, true);
-        } else {
-          scrollToSection(selector, finishEnter, false);
-        }
-      } else {
-        finishEnter();
-      }
+      slideToStep(step, finishEnter, instant);
     },
 
     _onStepEnter(step) {
@@ -2491,6 +2602,7 @@ Happy Birthday.
     next() {
       if (!this.canAdvance()) return;
       playSfx("click");
+      this.endCurrentSection();
       if (this.currentStep < JOURNEY_STEPS.length - 1) {
         this.goTo(this.currentStep + 1);
       } else {
@@ -2500,14 +2612,7 @@ Happy Birthday.
 
     skipAnimation() {
       playSfx("click");
-      if (TypewriterEngine.isRunning()) {
-        TypewriterEngine.skip();
-      }
-      if (this.activeCinematic && this.activeCinematic.skip) {
-        this.activeCinematic.skip();
-        this.activeCinematic = null;
-      }
-      this.markReady(this.currentStep);
+      this.endCurrentSection();
     },
 
     setQuizComplete() {
@@ -2515,32 +2620,25 @@ Happy Birthday.
       this.markReady(5);
     },
 
-    _initScrollSync() {
-      const sections = JOURNEY_STEPS.map(s => document.querySelector(s.section)).filter(Boolean);
-      const obs = new IntersectionObserver(entries => {
+    _initSwipeNav() {
+      const journey = document.getElementById("journey");
+      if (!journey) return;
+      let startX = 0;
+      let startY = 0;
+
+      journey.addEventListener("touchstart", e => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }, { passive: true });
+
+      journey.addEventListener("touchend", e => {
         if (!this.active || this.scrolling) return;
-        let best = null;
-        let bestRatio = 0;
-        entries.forEach(e => {
-          if (e.intersectionRatio > bestRatio) {
-            bestRatio = e.intersectionRatio;
-            best = e.target;
-          }
-        });
-        if (best && bestRatio > 0.4) {
-          const idx = sections.indexOf(best);
-          if (idx >= 0 && idx !== this.currentStep) {
-            this.currentStep = idx;
-            document.querySelectorAll(".section").forEach(s => {
-              s.classList.toggle("journey-current", s === best);
-            });
-            DecorationManager.setActiveSection(JOURNEY_STEPS[idx].section);
-            this.updateNav();
-            this._onStepEnter(idx);
-          }
-        }
-      }, { threshold: [0.4, 0.6] });
-      sections.forEach(s => obs.observe(s));
+        const dx = startX - e.changedTouches[0].clientX;
+        const dy = startY - e.changedTouches[0].clientY;
+        if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy)) return;
+        if (dx > 0) this.next();
+        else this.prev();
+      }, { passive: true });
     }
   };
 
@@ -2914,18 +3012,6 @@ Happy Birthday.
       if (e.key === "Escape" && lightbox.classList.contains("open")) closeLightbox();
     });
 
-    if (!prefersReducedMotion && parallaxWrap) {
-      ScrollTrigger.create({
-        trigger: "#section-photos",
-        start: "top bottom",
-        end: "bottom top",
-        scrub: 0.8,
-        onUpdate: (self) => {
-          gsap.set(parallaxWrap, { y: self.progress * 40 - 20 });
-        }
-      });
-    }
-
     if (sparkleCanvas && !prefersReducedMotion) {
       const sparkles = new ParticleSystem(sparkleCanvas, "star");
       sparkles.init(15);
@@ -2946,12 +3032,12 @@ Happy Birthday.
         }
         const fn = msgIndex === 0 ? typewriter : typewriterAppend;
         fn(typewriterEl, CONFIG.photoMessages[msgIndex], {
-          charSpeed: 45,
+          charSpeed: 24,
           cursor,
           onComplete: () => {
             msgIndex++;
             if (msgIndex < CONFIG.photoMessages.length) {
-              setTimeout(typeMessage, prefersReducedMotion ? 0 : 1500);
+              setTimeout(typeMessage, prefersReducedMotion ? 0 : 550);
             } else {
               if (cursor) cursor.style.display = "none";
               JourneyController.markReady(1);
@@ -3306,6 +3392,7 @@ Happy Birthday.
     function blowCandles() {
       if (candlesBlown) return;
       candlesBlown = true;
+      JourneyController.setCandlesBlown();
       playSfx("sparkle");
 
       flames.forEach((flame, i) => {
@@ -3329,7 +3416,7 @@ Happy Birthday.
       const wishEl = document.getElementById("cake-wish");
       wishEl.classList.add("visible");
       gsap.from(wishEl, { opacity: 0, y: 12, duration: animDuration(0.6) });
-      typewriter(wishEl, [CONFIG.cakeWishMessage], { charSpeed: 42 });
+      typewriter(wishEl, [CONFIG.cakeWishMessage], { charSpeed: 22 });
 
       if (micCheckInterval) clearInterval(micCheckInterval);
       if (micStream) micStream.getTracks().forEach(t => t.stop());
@@ -3340,8 +3427,12 @@ Happy Birthday.
       blowCandles();
     });
 
+    let micInitialized = false;
+
     // Microphone blow detection
     async function initMicrophone() {
+      if (micInitialized) return;
+      micInitialized = true;
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         micStatus.textContent = "Microphone not supported — use the button below!";
         return;
@@ -3381,16 +3472,8 @@ Happy Birthday.
       }
     }
 
-    // Lazy-init mic when section is near viewport
-    ScrollTrigger.create({
-      trigger: "#section-cake",
-      start: "top 70%",
-      once: true,
-      onEnter: initMicrophone
-    });
-
     JourneyController.registerStepEnter(6, () => {
-      JourneyController.markReady(6);
+      initMicrophone();
     });
   }
 
@@ -3400,7 +3483,7 @@ Happy Birthday.
     const hint = document.getElementById("garden-hint");
     const gardenIntroEl = document.getElementById("garden-intro");
     let introStarted = false;
-    let gardenEntered = false;
+    let flowersRevealed = false;
 
     function startGardenIntro() {
       if (introStarted) return;
@@ -3414,7 +3497,7 @@ Happy Birthday.
         }
         const fn = msgIndex === 0 ? typewriter : typewriterAppend;
         fn(gardenIntroEl, CONFIG.gardenIntroMessages[msgIndex], {
-          charSpeed: 34,
+          charSpeed: 20,
           onComplete: () => {
             msgIndex++;
             if (msgIndex < CONFIG.gardenIntroMessages.length) {
@@ -3429,23 +3512,30 @@ Happy Birthday.
       typeNext();
     }
 
-    function enterGardenStep() {
-      if (gardenEntered) {
-        if (introStarted) JourneyController.markReady(7);
+    function revealFlowers() {
+      const flowers = scene.querySelectorAll(".flower");
+      if (!flowers.length) return;
+
+      if (flowersRevealed) {
+        gsap.set(flowers, { scale: 1, opacity: 1 });
         return;
       }
-      gardenEntered = true;
-      if (introStarted) {
-        JourneyController.markReady(7);
-      } else {
-        startGardenIntro();
-      }
-      gsap.to(hint, { opacity: 0.6, duration: animDuration(1) });
-      const flowers = scene.querySelectorAll(".flower");
+      flowersRevealed = true;
+
       gsap.fromTo(flowers,
         { scale: 0, opacity: 0 },
         { scale: 1, opacity: 1, duration: animDuration(0.6), stagger: 0.12, ease: "back.out(1.7)" }
       );
+      gsap.to(hint, { opacity: 0.6, duration: animDuration(1) });
+    }
+
+    function enterGardenStep() {
+      if (!introStarted) {
+        startGardenIntro();
+      } else {
+        JourneyController.markReady(7);
+      }
+      revealFlowers();
     }
 
     const flowerColors = ["#ff8fab", "#c8b6ff", "#ffd166", "#ff6b9d", "#b8a9ff"];
@@ -3563,10 +3653,15 @@ Happy Birthday.
 
     ScrollTrigger.create({
       trigger: "#section-garden",
-      start: "top 68%",
+      start: "top 85%",
       once: true,
       onEnter: enterGardenStep
     });
+
+    // If journey already reached garden before this init finished, reveal now
+    if (JourneyController.active && JourneyController.currentStep === 7) {
+      enterGardenStep();
+    }
   }
 
   /* ========== JS: Section — Sky ========== */
@@ -3643,8 +3738,8 @@ Happy Birthday.
       finalStarted = true;
       const el = document.getElementById("final-typewriter");
       typewriterMultiline(el, CONFIG.finalMessage, {
-        charSpeed: 28,
-        linePause: 1200,
+        charSpeed: 16,
+        linePause: 400,
         onComplete: () => JourneyController.markReady(8)
       });
     }
@@ -3685,7 +3780,7 @@ Happy Birthday.
       requestAnimationFrame(() => modal.classList.add("show"));
       content.textContent = "";
       closeBtn.focus();
-      typewriterMultiline(content, CONFIG.secretLetter, { charSpeed: 32, linePause: 900 });
+      typewriterMultiline(content, CONFIG.secretLetter, { charSpeed: 18, linePause: 350 });
     }
 
     function closeLetter() {
@@ -3754,7 +3849,6 @@ Happy Birthday.
     JourneyController.init();
     initLoader();
     initWelcome();
-    await initPhotos();
     initNoticed();
     initCelebrate();
     initInstagram();
@@ -3764,6 +3858,7 @@ Happy Birthday.
     initSky();
     initSecretLetter();
     initEasterEgg();
+    await initPhotos();
 
     // Unlock audio on first interaction anywhere
     document.body.addEventListener("click", () => AudioManager.unlock(), { once: true });
