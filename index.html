@@ -2891,6 +2891,16 @@ Happy Birthday.
     }
     if (fromConfig.length) return fromConfig;
 
+    // Trust standard filenames when probing fails (some hosts block HEAD)
+    const optimistic = [];
+    for (let i = 1; i <= Math.min(max, 6); i++) {
+      optimistic.push({
+        src: assetPath(`assets/photo${i}.jpg`),
+        caption: CONFIG.photoCaptions[i - 1] || `Moment ${i}`
+      });
+    }
+    if (optimistic.length) return optimistic;
+
     return CONFIG.photoCaptions.slice(0, 4).map((caption, i) => ({
       src: "",
       caption,
