@@ -153,43 +153,6 @@
     #music-toggle:hover { transform: scale(1.08); }
     #music-toggle.playing { background: rgba(255, 143, 171, 0.35); }
 
-    .audio-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      background: var(--glass-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      min-width: 160px;
-    }
-
-    .audio-controls label {
-      font-family: var(--font-heading);
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-dark);
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-
-    .audio-controls input[type="range"] {
-      width: 100%;
-      accent-color: var(--pink);
-    }
-
-    #mute-btn {
-      font-family: var(--font-heading);
-      font-size: 0.8rem;
-      font-weight: 700;
-      padding: 0.35rem 0.75rem;
-      border-radius: 50px;
-      background: rgba(255,255,255,0.5);
-      border: 1px solid var(--glass-border);
-    }
-
     /* Aurora overlay for cinematic sections */
     .aurora-bg::before {
       content: "";
@@ -257,7 +220,8 @@
     /* Horizontal journey container */
     #journey {
       position: relative;
-      width: 100vw;
+      width: 100%;
+      max-width: 100vw;
       height: 100vh;
       height: 100dvh;
       overflow: hidden;
@@ -273,15 +237,17 @@
 
     .section {
       position: relative;
-      flex: 0 0 100vw;
-      width: 100vw;
+      flex: 0 0 100%;
+      width: 100%;
+      max-width: 100vw;
       height: 100vh;
       height: 100dvh;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding: max(3.5rem, env(safe-area-inset-top)) 1rem 6rem;
+      justify-content: center;
+      padding: max(3rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 6rem max(1rem, env(safe-area-inset-left));
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
@@ -294,7 +260,8 @@
 
     .section-content {
       position: relative; z-index: 2;
-      width: 100%; max-width: 900px;
+      width: 100%;
+      max-width: min(900px, 100%);
       margin: auto 0;
       flex-shrink: 0;
     }
@@ -715,17 +682,25 @@
       background: linear-gradient(180deg, #fff0f8 0%, #f8f0ff 50%, #fff8ee 100%);
     }
 
+    #section-cake .section-subtitle {
+      margin-bottom: 0.75rem;
+    }
+
     .cake-scene {
       perspective: 800px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2rem;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+      width: 100%;
     }
 
     .cake-wrapper {
       transform-style: preserve-3d;
       position: relative;
+      margin-top: 1rem;
+      padding-top: 4.5rem;
     }
 
     .cake-base {
@@ -1416,8 +1391,10 @@
       max-width: 480px;
       width: 100%;
       max-height: 85vh;
-      overflow-y: auto;
-      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0;
       background:
         linear-gradient(135deg, #fffef8 0%, #faf6ee 50%, #f5f0e6 100%);
       border-radius: 4px;
@@ -1435,9 +1412,19 @@
 
     .letter-paper::before {
       content: "";
-      position: absolute; inset: 12px;
+      position: absolute; inset: 12px 12px 4.5rem;
       border: 1px solid rgba(180, 160, 130, 0.15);
       pointer-events: none;
+      z-index: 0;
+    }
+
+    .letter-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 2rem 2rem 1rem;
+      position: relative;
+      z-index: 1;
     }
 
     .letter-content {
@@ -1446,17 +1433,78 @@
       line-height: 1.85;
       color: #3d3528;
       white-space: pre-wrap;
-      min-height: 12rem;
+      min-height: 6rem;
+    }
+
+    .letter-footer {
+      flex-shrink: 0;
+      padding: 0.85rem 1.5rem calc(1rem + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid rgba(180, 160, 130, 0.25);
+      background: linear-gradient(180deg, rgba(255, 254, 248, 0.92), #faf6ee);
+      position: relative;
+      z-index: 2;
+      text-align: center;
     }
 
     #letter-close {
-      margin-top: 1.5rem;
       padding: 0.6rem 1.5rem;
       border-radius: 50px;
       background: var(--text-dark);
       color: #fff;
       font-weight: 700;
       font-family: var(--font-heading);
+      min-height: 44px;
+      width: 100%;
+      max-width: 220px;
+    }
+
+    /* Re-enjoy modal */
+    #reenjoy-modal {
+      position: fixed; inset: 0; z-index: 9700;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(13, 27, 42, 0.82);
+      backdrop-filter: blur(10px);
+      opacity: 0; pointer-events: none;
+      padding: 1.25rem;
+      transition: opacity 0.45s;
+    }
+
+    #reenjoy-modal.show { opacity: 1; pointer-events: auto; }
+
+    .reenjoy-card {
+      max-width: 400px;
+      width: 100%;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow);
+    }
+
+    .reenjoy-card p {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      line-height: 1.45;
+    }
+
+    .reenjoy-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      align-items: center;
+    }
+
+    #reenjoy-yes { width: 100%; max-width: 280px; }
+    #reenjoy-no {
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      opacity: 0.75;
+      padding: 0.5rem;
+      min-height: 44px;
     }
 
     #secret-letter-btn {
@@ -1479,65 +1527,118 @@
     /* Mobile-first responsive polish */
     @media (max-width: 640px) {
       .section {
-        padding: max(2.75rem, env(safe-area-inset-top)) 0.85rem 6.5rem;
+        justify-content: flex-start;
+        padding-top: max(2.25rem, env(safe-area-inset-top));
+        padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
       }
 
       body.journey-active .section {
-        padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(9rem + env(safe-area-inset-bottom, 0px));
       }
 
-      .glass-card { padding: 1.35rem 1.1rem; }
+      .section-content {
+        margin: auto 0;
+        padding: 0 0.15rem;
+      }
+
+      #section-welcome {
+        justify-content: center;
+      }
+
+      #section-welcome .section-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: min(100%, calc(100dvh - 10rem));
+      }
+
+      .glass-card { padding: 1.25rem 1rem; width: 100%; }
+      .welcome-card { max-width: 100%; }
       .welcome-card h1 { font-size: clamp(1.35rem, 6vw, 1.75rem); }
-      .welcome-card p { font-size: 1rem; }
-      .btn-primary { padding: 0.85rem 1.5rem; font-size: 0.95rem; width: 100%; max-width: 280px; }
-      .section-title { font-size: clamp(1.25rem, 5.5vw, 1.65rem); margin-bottom: 0.35rem; }
-      .section-subtitle { font-size: 0.95rem; margin-bottom: 1.25rem; }
+      .welcome-card p { font-size: 0.98rem; }
+      .btn-primary {
+        padding: 0.85rem 1.5rem;
+        font-size: 0.95rem;
+        width: 100%;
+        max-width: 280px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .section-title { font-size: clamp(1.2rem, 5.5vw, 1.6rem); margin-bottom: 0.35rem; }
+      .section-subtitle { font-size: 0.92rem; margin-bottom: 1rem; line-height: 1.45; }
 
-      .carousel-wrap { margin: 0 -0.25rem; }
-      .polaroid { width: min(220px, 72vw); }
-      .typewriter-box { font-size: 0.95rem; padding: 0.85rem 1rem; }
+      .carousel-wrap { margin: 0 auto; width: 100%; }
+      .polaroid { width: min(200px, 68vw); }
+      .typewriter-box { font-size: 0.92rem; padding: 0.75rem 0.9rem; }
 
-      .cinematic-stage { padding: 1rem 0.85rem; min-height: 8rem; }
-      .cinematic-line { font-size: 1rem; line-height: 1.55; }
+      .cinematic-panel { width: 100%; }
+      .cinematic-stage { padding: 0.85rem 0.75rem; min-height: 7rem; }
+      .cinematic-line { font-size: 0.98rem; line-height: 1.5; }
 
-      .celebrate-grid { grid-template-columns: 1fr; gap: 0.75rem; }
-      .celebrate-card { padding: 1.1rem 1rem; }
-      .celebrate-hint { font-size: 0.8rem; }
+      .celebrate-grid { width: 100%; gap: 0.65rem; }
+      .celebrate-card { padding: 1rem 0.9rem; width: 100%; }
+      .celebrate-card-header { gap: 0.5rem; }
+      .celebrate-card h3 { font-size: 0.98rem; }
+      .celebrate-card-preview,
+      .celebrate-card-expanded { font-size: 0.92rem; text-align: left; }
+      .celebrate-hint { font-size: 0.78rem; margin-top: 0.75rem; }
 
-      .insta-grid { grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
-      .insta-card { padding: 0.85rem 0.65rem; }
-      .insta-card-icon { font-size: 1.5rem; }
-      .insta-card-label { font-size: 0.8rem; }
+      .insta-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; width: 100%; }
+      .insta-card { padding: 0.75rem 0.55rem; }
+      .insta-card-icon { font-size: 1.4rem; margin-bottom: 0.35rem; }
+      .insta-card-label { font-size: 0.78rem; }
+      .insta-card-message { font-size: 0.8rem; }
 
-      .quiz-card { padding: 1.15rem 1rem; }
-      .quiz-option { padding: 0.75rem 0.85rem; font-size: 0.95rem; min-height: 44px; }
+      .quiz-container { width: 100%; }
+      .quiz-card { padding: 1rem 0.9rem; width: 100%; }
+      .quiz-question { font-size: 1rem; }
+      .quiz-option { padding: 0.7rem 0.8rem; font-size: 0.9rem; min-height: 44px; }
 
-      .cake-scene { transform: scale(0.88); transform-origin: center top; }
-      .cake-wish { font-size: 0.95rem; padding: 0 0.5rem; }
+      .cake-scene { transform: scale(0.82); transform-origin: center top; }
+      .cake-wish { font-size: 0.9rem; padding: 0 0.35rem; }
 
-      .garden-scene { height: min(320px, 40vh); padding-top: 1.5rem; }
-      .garden-intro { font-size: 0.95rem; padding: 0.85rem 1rem; margin-bottom: 0.75rem; }
-      .flower-bloom { width: 56px; height: 56px; }
-      .flower-message { max-width: 140px; font-size: 0.8rem; padding: 0.5rem 0.65rem; }
+      #section-garden .section-content { width: 100%; }
+      .garden-scene { height: min(300px, 38vh); padding-top: 1rem; width: 100%; }
+      .garden-intro { font-size: 0.9rem; padding: 0.75rem 0.85rem; margin-bottom: 0.65rem; }
+      .flower-bloom { width: 52px; height: 52px; }
+      .flower-message { max-width: min(140px, 38vw); font-size: 0.78rem; padding: 0.45rem 0.55rem; }
+      .garden-hint { font-size: 0.88rem; }
 
-      .final-typewriter { font-size: 0.95rem; max-height: 45vh; }
-      .sky-message-panel { padding: 0 0.25rem; }
+      .final-typewriter { font-size: 0.92rem; max-height: 42vh; line-height: 1.55; }
+      .sky-message-panel { padding: 0; width: 100%; }
+      .sky-closing { font-size: 0.9rem; }
 
-      #journey-bar { padding: 0.6rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom, 0px)); gap: 0.4rem; }
-      .journey-step-label { font-size: 0.7rem; min-width: 4.5rem; }
-      .journey-step-dot { width: 28px; height: 28px; font-size: 0.75rem; }
-      .journey-btn { font-size: 0.8rem; padding: 0.5rem 0.85rem; min-height: 44px; }
-      .journey-progress-wrap { gap: 0.5rem; }
+      #journey-bar {
+        padding: 0.55rem 0.65rem calc(0.55rem + env(safe-area-inset-bottom, 0px));
+        gap: 0.35rem;
+      }
+      .journey-step-label { font-size: 0.68rem; min-width: 3.75rem; }
+      .journey-step-dot { width: 26px; height: 26px; font-size: 0.7rem; }
+      .journey-controls {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .journey-btn { font-size: 0.78rem; padding: 0.5rem 0.75rem; min-height: 44px; }
+      #journey-next { min-width: 0; }
+      .journey-gate-hint { flex-basis: 100%; font-size: 0.68rem; }
+      .journey-progress-wrap { gap: 0.4rem; }
 
-      #music-toggle { width: 46px; height: 46px; font-size: 1.2rem; }
-      .audio-controls { min-width: 140px; padding: 0.6rem 0.75rem; }
+      #music-toggle { width: 44px; height: 44px; font-size: 1.15rem; }
 
-      .letter-paper { margin: 1rem; padding: 1.25rem 1rem; max-height: 85vh; }
+      .letter-body { padding: 1.25rem 1rem 0.75rem; }
+      .letter-footer { padding: 0.75rem 1rem calc(0.85rem + env(safe-area-inset-bottom, 0px)); }
+      .letter-paper { max-height: 88vh; margin: 0.5rem; }
+
+      .cake-wrapper { padding-top: 3.5rem; margin-top: 0.5rem; }
+      .cake-scene { gap: 1rem; }
     }
 
     @media (max-width: 380px) {
-      .insta-grid { grid-template-columns: 1fr 1fr; }
-      .flower-message { max-width: 120px; font-size: 0.75rem; }
+      .insta-grid { gap: 0.5rem; }
+      .flower-message { max-width: 110px; font-size: 0.72rem; }
+      .journey-btn { font-size: 0.72rem; padding: 0.45rem 0.6rem; }
     }
 
     /* Reduced motion */
@@ -1571,14 +1672,9 @@
     <p class="loader-text">Preparing your surprise<span class="loader-dots"></span></p>
   </div>
 
-  <!-- Music / Audio Panel -->
+  <!-- Music toggle only -->
   <div id="audio-panel">
-    <div class="audio-controls" id="audio-controls" aria-label="Audio controls">
-      <label for="volume-slider">Volume</label>
-      <input type="range" id="volume-slider" min="0" max="100" value="35" aria-label="Music volume" />
-      <button type="button" id="mute-btn" aria-pressed="false">Mute</button>
-    </div>
-    <button id="music-toggle" aria-label="Play background music" aria-pressed="false" aria-expanded="false" title="Toggle music">
+    <button id="music-toggle" aria-label="Play background music" aria-pressed="false" title="Toggle music">
       🎵
     </button>
   </div>
@@ -1605,8 +1701,23 @@
   <div id="letter-modal" role="dialog" aria-modal="true" aria-labelledby="letter-title" hidden>
     <div class="letter-paper">
       <h3 id="letter-title" class="sr-only">A message for Arzoo</h3>
-      <div class="letter-content" id="letter-content" aria-live="polite"></div>
-      <button id="letter-close" type="button">Close 💌</button>
+      <div class="letter-body">
+        <div class="letter-content" id="letter-content" aria-live="polite"></div>
+      </div>
+      <div class="letter-footer">
+        <button id="letter-close" type="button">Close 💌</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Re-enjoy journey modal -->
+  <div id="reenjoy-modal" role="dialog" aria-modal="true" aria-labelledby="reenjoy-title" hidden>
+    <div class="reenjoy-card">
+      <p id="reenjoy-title">Would you like to enjoy this moment again?</p>
+      <div class="reenjoy-actions">
+        <button class="btn-primary" id="reenjoy-yes" type="button">Yes, take me back ✨</button>
+        <button type="button" id="reenjoy-no">Maybe later</button>
+      </div>
     </div>
   </div>
 
@@ -1953,7 +2064,7 @@ Happy Birthday.
 
 — Someone who noticed`,
     music: {
-      bg: "assets/bg-music.mp3",
+      bgCandidates: ["assets/bg-music2.mp3", "assets/bg-music.mp3"],
       birthday: "assets/happy-birthday.mp3"
     },
     sfx: {
@@ -1977,6 +2088,49 @@ Happy Birthday.
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const animDuration = (d) => prefersReducedMotion ? 0.01 : d;
 
+  // Resolve asset URLs correctly on GitHub Pages / subfolders
+  function assetPath(relativePath) {
+    try {
+      return new URL(relativePath.replace(/^\//, ""), window.location.href).href;
+    } catch {
+      return relativePath;
+    }
+  }
+
+  function imageExists(src) {
+    return new Promise(resolve => {
+      const img = new Image();
+      const finish = (ok) => { img.onload = img.onerror = null; resolve(ok); };
+      img.onload = () => finish(true);
+      img.onerror = () => finish(false);
+      img.src = src;
+    });
+  }
+
+  function mediaExists(src) {
+    return new Promise(resolve => {
+      const audio = document.createElement("audio");
+      const finish = (ok) => {
+        audio.oncanplay = audio.onerror = null;
+        audio.src = "";
+        resolve(ok);
+      };
+      const timer = setTimeout(() => finish(false), 5000);
+      audio.oncanplay = () => { clearTimeout(timer); finish(true); };
+      audio.onerror = () => { clearTimeout(timer); finish(false); };
+      audio.src = src;
+    });
+  }
+
+  async function resolveFirstAsset(candidates) {
+    const list = Array.isArray(candidates) ? candidates : [candidates];
+    for (const path of list) {
+      const url = assetPath(path);
+      if (await mediaExists(url)) return url;
+    }
+    return null;
+  }
+
   // Insert recipient name throughout DOM
   document.querySelectorAll(".recipient-name").forEach(el => { el.textContent = CONFIG.name; });
 
@@ -1992,30 +2146,33 @@ Happy Birthday.
     sfxBloom: document.getElementById("sfx-bloom"),
     sfxSparkle: document.getElementById("sfx-sparkle"),
     musicToggle: document.getElementById("music-toggle"),
-    audioControls: document.getElementById("audio-controls"),
-    volumeSlider: document.getElementById("volume-slider"),
-    muteBtn: document.getElementById("mute-btn"),
     isPlaying: false,
     bgAvailable: true,
+    _bgLoaded: false,
+    _lastSparkleAt: 0,
 
-    init() {
-      this.bgMusic.src = CONFIG.music.bg;
-      this.birthdayMusic.src = CONFIG.music.birthday;
-      this.sfxClick.src = CONFIG.sfx.click;
-      this.sfxBloom.src = CONFIG.sfx.bloom;
-      this.sfxSparkle.src = CONFIG.sfx.sparkle;
+    async init() {
+      const bgSrc = await resolveFirstAsset(CONFIG.music.bgCandidates);
+      const resolvedBg = bgSrc || assetPath(CONFIG.music.bgCandidates[0]);
+      if (resolvedBg) {
+        this.bgMusic.src = resolvedBg;
+        this._bgLoaded = true;
+        this.bgMusic.load();
+      } else {
+        this.bgAvailable = false;
+      }
 
-      this.targetVolume = 0.35;
+      const birthdaySrc = assetPath(CONFIG.music.birthday);
+      this.birthdayMusic.src = birthdaySrc;
+      this.sfxClick.src = assetPath(CONFIG.sfx.click);
+      this.sfxBloom.src = assetPath(CONFIG.sfx.bloom);
+      this.sfxSparkle.src = assetPath(CONFIG.sfx.sparkle);
+
+      this.targetVolume = 0.4;
       this.bgMusic.volume = 0;
       this.birthdayMusic.volume = 0.6;
-      [this.sfxClick, this.sfxBloom, this.sfxSparkle].forEach(a => { a.volume = 0.25; });
 
       this.bgMusic.addEventListener("error", () => { this.bgAvailable = false; });
-      this.bgMusic.load();
-
-      this.volumeSlider.addEventListener("input", (e) => this.setVolume(e.target.value / 100));
-      this.muteBtn.addEventListener("click", () => this.toggleMute());
-
       this.musicToggle.addEventListener("click", () => this.toggleBgMusic());
     },
 
@@ -2036,30 +2193,33 @@ Happy Birthday.
         callback();
       };
       this.bgMusic.addEventListener("canplay", onReady);
-      this.bgMusic.load();
+      if (!this._bgLoaded) {
+        this._bgLoaded = true;
+        this.bgMusic.load();
+      }
+    },
+
+    resumeBgIfNeeded() {
+      if (!this.isPlaying || this.muted || !this.bgAvailable) return;
+      if (!this.bgMusic.paused) return;
+      if (this.fadeTween) this.fadeTween.kill();
+      this.bgMusic.volume = this.targetVolume;
+      this.bgMusic.play().catch(() => {});
     },
 
     setVolume(v) {
       this.targetVolume = Math.max(0, Math.min(1, v));
       if (!this.muted && this.isPlaying) this.bgMusic.volume = this.targetVolume;
-      this.volumeSlider.value = Math.round(this.targetVolume * 100);
-    },
-
-    toggleMute() {
-      this.muted = !this.muted;
-      this.muteBtn.setAttribute("aria-pressed", this.muted ? "true" : "false");
-      this.muteBtn.textContent = this.muted ? "Unmute" : "Mute";
-      if (this.muted) {
-        gsap.to(this.bgMusic, { volume: 0, duration: animDuration(0.3) });
-      } else if (this.isPlaying) {
-        gsap.to(this.bgMusic, { volume: this.targetVolume, duration: animDuration(0.4) });
-      }
     },
 
     fadeInBg() {
       if (!this.bgAvailable) return;
-      if (this.fadeTween) this.fadeTween.kill();
       const target = this.muted ? 0 : this.targetVolume;
+      if (this.isPlaying && !this.muted && this.bgMusic.volume >= target * 0.5) {
+        this.bgMusic.volume = target;
+        return;
+      }
+      if (this.fadeTween) this.fadeTween.kill();
       if (prefersReducedMotion) {
         this.bgMusic.volume = target;
         return;
@@ -2124,7 +2284,9 @@ Happy Birthday.
       const wasPlaying = this.isPlaying;
       const resume = () => {
         if (wasPlaying && !this.muted) {
-          this.bgMusic.play().then(() => this.fadeInBg()).catch(() => {});
+          this.bgMusic.play().then(() => {
+            this.bgMusic.volume = this.targetVolume;
+          }).catch(() => {});
         }
       };
       if (wasPlaying) this.fadeOutBg();
@@ -2136,11 +2298,28 @@ Happy Birthday.
 
   function playSfx(type) {
     if (!AudioManager.unlocked) return;
-    const map = { click: AudioManager.sfxClick, bloom: AudioManager.sfxBloom, sparkle: AudioManager.sfxSparkle };
-    const audio = map[type];
-    if (!audio) return;
-    audio.currentTime = 0;
-    audio.play().catch(() => {});
+
+    const srcMap = {
+      click: assetPath(CONFIG.sfx.click),
+      bloom: assetPath(CONFIG.sfx.bloom),
+      sparkle: assetPath(CONFIG.sfx.sparkle)
+    };
+    const src = srcMap[type];
+    if (!src) return;
+
+    if (type === "sparkle" && Date.now() - AudioManager._lastSparkleAt < 280) return;
+    if (type === "sparkle") AudioManager._lastSparkleAt = Date.now();
+
+    const wasBgPlaying = AudioManager.isPlaying && !AudioManager.bgMusic.paused;
+    const clip = new Audio(src);
+    clip.volume = 0.28;
+    clip.play().catch(() => {});
+
+    const resumeBg = () => {
+      if (wasBgPlaying) AudioManager.resumeBgIfNeeded();
+    };
+    clip.addEventListener("ended", resumeBg, { once: true });
+    setTimeout(resumeBg, 400);
   }
 
   // Confetti helper
@@ -2241,7 +2420,7 @@ Happy Birthday.
       if (typeof lines === "string") lines = [lines];
       else if (!Array.isArray(lines)) lines = [String(lines ?? "")];
 
-      const { charSpeed = 22, linePause = 450, onComplete, clear = true, cursor = null } = options;
+      const { charSpeed = 22, linePause = 450, onComplete, onChar, clear = true, cursor = null } = options;
       const fullText = lines.join("\n\n");
       const instant = prefersReducedMotion;
 
@@ -2274,6 +2453,7 @@ Happy Birthday.
         if (charIndex < line.length) {
           element.textContent += line[charIndex];
           charIndex++;
+          if (onChar) onChar();
           this._addTimer(setTimeout(typeNext, charSpeed));
         } else {
           lineIndex++;
@@ -2607,6 +2787,7 @@ Happy Birthday.
         this.goTo(this.currentStep + 1);
       } else {
         launchConfetti({ particleCount: 80, spread: 70, origin: { y: 0.5 }, force: true });
+        showReenjoyModal();
       }
     },
 
@@ -2642,28 +2823,72 @@ Happy Birthday.
     }
   };
 
-  function imageExists(src) {
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      img.src = src + (src.includes("?") ? "&" : "?") + "t=" + Date.now();
-    });
-  }
-
   async function discoverPhotos() {
     const max = CONFIG.photoCount || 12;
+    const exts = ["jpg", "jpeg", "png", "webp"];
     const found = [];
+
     for (let i = 1; i <= max; i++) {
-      const src = `assets/photo${i}.jpg`;
-      if (await imageExists(src)) {
-        found.push({
-          src: `assets/photo${i}.jpg`,
-          caption: CONFIG.photoCaptions[i - 1] || `Moment ${i}`
-        });
+      for (const ext of exts) {
+        const src = assetPath(`assets/photo${i}.${ext}`);
+        if (await imageExists(src)) {
+          found.push({
+            src,
+            caption: CONFIG.photoCaptions[i - 1] || `Moment ${i}`
+          });
+          break;
+        }
       }
     }
-    return found.length ? found : CONFIG.photos;
+
+    if (found.length) return found;
+
+    for (const photo of CONFIG.photos) {
+      const src = assetPath(photo.src);
+      if (await imageExists(src)) {
+        found.push({ src, caption: photo.caption });
+      }
+    }
+    if (found.length) return found;
+
+    return CONFIG.photoCaptions.slice(0, 4).map((caption, i) => ({
+      src: "",
+      caption,
+      placeholder: true,
+      gradient: CONFIG.placeholderGradients[i % CONFIG.placeholderGradients.length]
+    }));
+  }
+
+  function showReenjoyModal() {
+    const modal = document.getElementById("reenjoy-modal");
+    if (!modal || modal.classList.contains("show")) return;
+    modal.hidden = false;
+    requestAnimationFrame(() => modal.classList.add("show"));
+    document.getElementById("reenjoy-yes").focus();
+  }
+
+  function initReenjoy() {
+    const modal = document.getElementById("reenjoy-modal");
+    const yesBtn = document.getElementById("reenjoy-yes");
+    const noBtn = document.getElementById("reenjoy-no");
+
+    function closeReenjoy() {
+      modal.classList.remove("show");
+      setTimeout(() => { modal.hidden = true; }, 400);
+    }
+
+    yesBtn.addEventListener("click", () => {
+      playSfx("sparkle");
+      window.location.reload();
+    });
+    noBtn.addEventListener("click", () => {
+      playSfx("click");
+      closeReenjoy();
+    });
+    modal.addEventListener("click", e => { if (e.target === modal) closeReenjoy(); });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && modal.classList.contains("show")) closeReenjoy();
+    });
   }
 
   function spawnSparkleAt(x, y, container) {
@@ -2929,13 +3154,21 @@ Happy Birthday.
       const img = document.createElement("img");
       img.className = "polaroid-img";
       img.alt = photo.caption;
-      img.src = photo.src;
       img.loading = "lazy";
-      img.style.background = CONFIG.placeholderGradients[i % CONFIG.placeholderGradients.length];
-      img.onerror = function() {
-        this.removeAttribute("src");
-        this.style.background = CONFIG.placeholderGradients[i % CONFIG.placeholderGradients.length];
-      };
+      const gradient = photo.gradient || CONFIG.placeholderGradients[i % CONFIG.placeholderGradients.length];
+      img.style.background = gradient;
+
+      if (photo.placeholder || !photo.src) {
+        img.style.minHeight = "180px";
+        img.style.display = "block";
+      } else {
+        img.src = photo.src;
+        img.onerror = function() {
+          this.removeAttribute("src");
+          this.style.minHeight = "180px";
+          this.style.background = gradient;
+        };
+      }
 
       const caption = document.createElement("p");
       caption.className = "polaroid-caption";
@@ -2946,10 +3179,9 @@ Happy Birthday.
       track.appendChild(card);
 
       function openLightbox() {
+        if (photo.placeholder || !img.getAttribute("src")) return;
         playSfx("click");
-        const src = img.src || "";
-        if (!src) return;
-        lightboxImg.src = src;
+        lightboxImg.src = img.src;
         lightboxImg.alt = photo.caption;
         lightboxCaption.textContent = photo.caption;
         lightbox.hidden = false;
@@ -3771,7 +4003,12 @@ Happy Birthday.
     const btn = document.getElementById("secret-letter-btn");
     const modal = document.getElementById("letter-modal");
     const content = document.getElementById("letter-content");
+    const letterBody = modal.querySelector(".letter-body");
     const closeBtn = document.getElementById("letter-close");
+
+    function scrollLetterToBottom() {
+      if (letterBody) letterBody.scrollTop = letterBody.scrollHeight;
+    }
 
     function openLetter() {
       AudioManager.unlock();
@@ -3779,8 +4016,13 @@ Happy Birthday.
       modal.hidden = false;
       requestAnimationFrame(() => modal.classList.add("show"));
       content.textContent = "";
+      if (letterBody) letterBody.scrollTop = 0;
       closeBtn.focus();
-      typewriterMultiline(content, CONFIG.secretLetter, { charSpeed: 18, linePause: 350 });
+      typewriterMultiline(content, CONFIG.secretLetter, {
+        charSpeed: 18,
+        linePause: 350,
+        onChar: scrollLetterToBottom
+      });
     }
 
     function closeLetter() {
@@ -3845,7 +4087,7 @@ Happy Birthday.
 
   /* ========== JS: Init ========== */
   async function init() {
-    AudioManager.init();
+    await AudioManager.init();
     JourneyController.init();
     initLoader();
     initWelcome();
@@ -3858,6 +4100,7 @@ Happy Birthday.
     initSky();
     initSecretLetter();
     initEasterEgg();
+    initReenjoy();
     await initPhotos();
 
     // Unlock audio on first interaction anywhere
